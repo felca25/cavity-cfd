@@ -19,25 +19,24 @@ def create_paths(Lx, Ly, Re, t_arr, result_params):
     '''
     paths = []
     
-    for i in range(len(Re)):
-        for j in range(len(t_arr)):
+    for j in range(len(t_arr)):
+        
+        path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t_arr[j]:.2f}'
+        
+        try:
+            os.makedirs(path)
+        # os raises an Error when the path already exists, because we don't want our
+        # programm to stop, when handle it like so    
+        except FileExistsError:
+            pass
+        
+        # Clean-up or Create .txt files to save matrices
+        for k in range(len(result_params)):
             
-            path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re[i]}/t_{t_arr[j]:.2f}'
+            txt_path = f'{path}/{k}_{result_params[k]}.txt'
             
-            try:
-                os.makedirs(path)
-            # os raises an Error when the path already exists, because we don't want our
-            # programm to stop, when handle it like so    
-            except FileExistsError:
-                pass
-            
-            # Clean-up or Create .txt files to save matrices
-            for k in range(len(result_params)):
-                
-                txt_path = f'{path}/{k}_{result_params[k]}.txt'
-                
-                f =  open(txt_path, 'w').close()
-                paths.append(txt_path)
+            f =  open(txt_path, 'w').close()
+            paths.append(txt_path)
                 
                 
     return paths
