@@ -90,16 +90,10 @@ if __name__ == "__main__":
     Nx, Ny = 25, 25
     Lx, Ly = 1., 1.
 
-    reynolds = [1, 10, 100, 1000]
+    reynolds = (1, 10, 100, 1000)
 
     dx, dy = Lx / Nx, Ly / Ny
 
-    for Re in reynolds:
-        dt = 0.25 * Re * (dx**2)
+    t_arr_mult = (1., 10., 25., 100., 500.)
 
-    if dt > dx:
-        dt *= 0.01
-
-    t_arr = (dt, 10*dt, 25*dt, 100*dt, 500*dt)
-    
-    run(Nx, Ny, Lx, Ly, reynolds, dx, dy, dt, t_arr, result_params)
+    run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params, TOL)
