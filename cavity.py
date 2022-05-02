@@ -5,15 +5,25 @@ import save_data
 from functions import *
 os.system('cls' if os.name == 'nt' else 'clear')
 
-def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params):
+def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params, TOL):
 
 
     for i in range(len(reynolds)):
         
         Re = reynolds[i]
         
+        # we need to first apply the stability and
+        # convergence conditions so that the answers don't blow up
+        # this should be at the main function because we ought to want
+        # to have fine manual control over the process. But having this here
+        # Ensures that the values won't blow up as those variables are Re dependent
+        # What will be defined are the multipliers of the time steps to be saved
+        
         if dx > 1 / np.sqrt(Re):
             dx = (1 / np.sqrt(Re)) - TOL
+            
+        if dy > 1 / np.sqrt(Re):
+            dy = (1 / np.sqrt(Re)) - TOL
             
         dt = 0.25 * Re * (dx**2)
         
@@ -26,6 +36,8 @@ def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params):
             t_arr[i] = t_arr_mult[i] * dt
         
         save_data.create_paths(Lx, Ly, Re, t_arr, result_params)
+        
+        # Running the actual simulation from now on
         
         u = np.zeros([Nx+1, Ny+2], float)
         v = np.zeros([Nx+2, Ny+1], float)
