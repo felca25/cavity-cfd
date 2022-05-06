@@ -50,27 +50,10 @@ def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, dt, t_arr, result_params, TOL):
             
             
             for time in t_arr:
-                if t >= time - 1e-12 and t <= time + 1e-12:
+                if t >= time - TOL and t <= time + TOL:
             
                     rel_path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.3f}'
             
                     save_data.save_data(aux_arr, result_params, rel_path)
             
         psi = calculate_stream_function(psi, u, v, Nx, Ny, dx, dy, dt, TOL)
-
-if __name__ == "__main__":
-    
-    result_params = ('u_star', 'v_star', 'pressure', 'u', 'v', 'stream_function', 'uplot', 'vplot')
-
-    TOL = 1e-8
-
-    Nx, Ny = 25, 25
-    Lx, Ly = 1., 1.
-
-    reynolds = (1, 10, 100, 1000)
-
-    dx, dy = Lx / Nx, Ly / Ny
-
-    t_arr_multipliers = (1., 10., 25., 100., 500.)
-
-    run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_multipliers, result_params, TOL)

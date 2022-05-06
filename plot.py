@@ -21,7 +21,7 @@ if __name__ == "__main__":
     
     Re = 1000
     Lx, Ly = 1., 1.
-    t = 2.5
+    t = 17.5
     
     u_plot, v_plot, pressure, stream_lines = load_files(Lx, Ly, t, Re)
 
