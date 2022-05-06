@@ -5,35 +5,12 @@ import save_data
 from functions import *
 os.system('cls' if os.name == 'nt' else 'clear')
 
-def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params, TOL):
+def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, dt, t_arr, result_params, TOL):
 
 
     for i in range(len(reynolds)):
         
         Re = reynolds[i]
-        
-        # we need to first apply the stability and
-        # convergence conditions so that the answers don't blow up
-        # this should be at the main function because we ought to want
-        # to have fine manual control over the process. But having this here
-        # Ensures that the values won't blow up as those variables are Re dependent
-        # What will be defined are the multipliers of the time steps to be saved
-        
-        if dx > 1 / np.sqrt(Re):
-            dx = (1 / np.sqrt(Re)) - TOL
-            
-        if dy > 1 / np.sqrt(Re):
-            dy = (1 / np.sqrt(Re)) - TOL
-            
-        dt = 0.25 * Re * (dx**2)
-        
-        if dt > dx:
-            dt *= 0.01
-            
-        t_arr = np.zeros(len(t_arr_mult))
-        
-        for i in range(len(t_arr)):
-            t_arr[i] = t_arr_mult[i] * dt
         
         save_data.create_paths(Lx, Ly, Re, t_arr, result_params)
         
@@ -51,7 +28,7 @@ def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params, TOL):
 
         t = 0
         
-        while t < t_arr[-1]:
+        while t <= t_arr[-1]:
             t += dt
             print(t)
             
@@ -73,9 +50,9 @@ def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params, TOL):
             
             
             for time in t_arr:
-                if t >= time - 0.1*dt and t <= time + 0.1*dt:
-                    
-                    rel_path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.2f}'
+                if t >= time - 1e-12 and t <= time + 1e-12:
+            
+                    rel_path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.3f}'
             
                     save_data.save_data(aux_arr, result_params, rel_path)
             
@@ -85,7 +62,7 @@ if __name__ == "__main__":
     
     result_params = ('u_star', 'v_star', 'pressure', 'u', 'v', 'stream_function', 'uplot', 'vplot')
 
-    TOL = 1e-5
+    TOL = 1e-8
 
     Nx, Ny = 25, 25
     Lx, Ly = 1., 1.
@@ -94,6 +71,6 @@ if __name__ == "__main__":
 
     dx, dy = Lx / Nx, Ly / Ny
 
-    t_arr_mult = (1., 10., 25., 100., 500.)
+    t_arr_multipliers = (1., 10., 25., 100., 500.)
 
-    run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params, TOL)
+    run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_multipliers, result_params, TOL)

@@ -1,5 +1,6 @@
 import numpy as np
-
+from numba import njit
+@njit
 def calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re):
     
     for i in range(1,Nx):
@@ -24,7 +25,7 @@ def calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re):
         
             
     return u_star
-
+@njit
 def calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re):
     
     for i in range(0,Nx):
@@ -50,7 +51,7 @@ def calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re):
 
         
     return v_star      
-
+@njit
 def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
     error = 100;
     iter = 0
@@ -163,7 +164,7 @@ def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
         iter += 1
             
     return p
-
+@njit
 def calculate_new_u(u, u_star, p , Nx, Ny, dx, dt):
     
     for i in range(1,Nx):
@@ -172,7 +173,7 @@ def calculate_new_u(u, u_star, p , Nx, Ny, dx, dt):
             u[i,j] = u_star[i,j] - dt * ((p[i,j] - p[i-1,j])/dx)
 
     return u
-
+@njit
 def calculate_new_v(v, v_star, p, Nx, Ny, dy, dt):
     
     for i in range(-1,Nx+1):
@@ -181,7 +182,7 @@ def calculate_new_v(v, v_star, p, Nx, Ny, dy, dt):
             v[i,j] = v_star[i,j] - dt * ((p[i,j] - p[i,j-1])/dy)
             
     return v
-
+@njit
 def calculate_stream_function(psi, u, v, Nx, Ny, dx, dy, dt, TOL):
     
     alpha = -((2.0/(dx*dx)) + (2.0/(dy*dy)))
@@ -211,8 +212,8 @@ def calculate_stream_function(psi, u, v, Nx, Ny, dx, dy, dt, TOL):
     return psi
 
 def calculate_velocity_plot(u, v, Nx, Ny):
-    uplot = np.zeros((Nx+1,Ny+1),float) 
-    vplot = np.zeros((Nx+1,Ny+1),float) 
+    uplot = np.zeros([Nx+1,Ny+1],float) 
+    vplot = np.zeros([Nx+1,Ny+1],float) 
     for i in range(0,Nx+1):
         for j in range(0,Ny+1):
             uplot[i,j] = 0.5*(u[i,j]+u[i,j-1]) 

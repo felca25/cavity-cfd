@@ -1,111 +1,82 @@
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import matplotlib.gridspec as gridspec
 import numpy as np
 
 
-def read_np_file(filepath):
-    file = open(filepath, 'r')
 
-    lines = []
-    for line in file:
-        lines.append(line)
-        
-    for i in range(0, len(lines)):
-        lines[i] = lines[i][:-1]
-        lines[i] = lines[i].split(' ')
-        
-        for j in range(0, len(lines[i])):
-            lines[i][j] = float(lines[i][j])
-            
-        print(lines[i])
-
-    return lines
-
-def plot_cmap(leg, result):
-    '''Helper function to plot temperature color maps based on specific points in time'''
-    Na, Nb, Nc = len(result), len(result[0]), len(result[0][0])
-    for i in range(Na):
-        max_value, max_value_new = 0., 0.
-        min_value, min_value_new = 0., 0.
-        for j in range(Nb):
-            max_value_new = max(result[i][j])
-            
-            if max_value_new > max_value:
-                max_value = max_value_new
-            elif min_value_new < min_value:
-                min_value = min_value_new
-            else: pass
-        
-        # Getting Jet colormap
-        jet = cm.get_cmap('jet', 128)
-        colormaps = [jet]
-        
-        cmap_len = len(colormaps)
-
-        fig, axs = plt.subplots(1, cmap_len, figsize= ((cmap_len * 2) + 2, 3), constrained_layout= True, squeeze= False)
-        plt.title(leg[i])
-        for [ax, cmap] in zip(axs.flat, colormaps):
-            psm = ax.pcolormesh(result[i], cmap= cmap, rasterized= True, vmin= max_value, vmax= min_value)
-            fig.colorbar(psm, ax= ax)
-
-def plot_quiver():
-    plt.figure()
-    plt.quiver(x,y,np.transpose(uplot),np.transpose(vplot)) 
-    plt.title(f'Velocity quiver for time {t:.2f}')
-    aux_arr = (u_star, v_star, p, u, v, psi, uplot, vplot)
-    for i in range(len(result_params)):
-        path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{reynolds[k]}/t_{t:.2f}/{i}_{result_params[i]}.txt'
-        file = open(path, 'w')
-        np.savetxt(path, np.transpose(aux_arr[i]))
-        file.close()
-
-def plot_values():
-    values = [read_np_file(path + '/0_u_star.txt')]
-    leg = ['u_star']
-    plot_cmap(leg, values)
+def load_files(Lx, Ly, t, Re):
     
-    values = [read_np_file(path + '/1_v_star.txt')]
-    leg = ['v_star']
-    plot_cmap(leg, values)
-    
-    values = [read_np_file(path + '/2_pressure.txt')]
-    leg = ['pressure']
-    plot_cmap(leg, values)
-    
-    values = [read_np_file(path + '/3_u.txt')]
-    leg = ['u_new']
-    plot_cmap(leg, values)
-    
-    values = [read_np_file(path + '/4_v.txt')]
-    leg = ['v_new']
-    plot_cmap(leg, values)
-    
-    values = [read_np_file(path + '/4_v.txt')]
-    leg = ['v_new']
-    plot_cmap(leg, values)
+    stream_lines = np.loadtxt(f"cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.3f}/5_stream_function.txt")
+    u_plot = np.loadtxt(f"cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.3f}/6_uplot.txt")
+    v_plot = np.loadtxt(f"cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.3f}/7_vplot.txt")
+    pressure = np.loadtxt(f"cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.3f}/2_pressure.txt")
 
-    plt.show()
-
-
+    return u_plot, v_plot, pressure, stream_lines 
 
 
 if __name__ == "__main__":
+    plt.rcParams["font.family"] = "Times New Roman"
     
-    path = "/Users/felipeandrade/Documents/UnB/9. Semester/cavity-cfd/cavity_results/1.00x1.00"
+    Re = 1000
+    Lx, Ly = 1., 1.
+    t = 2.5
     
-    from os import walk
+    u_plot, v_plot, pressure, stream_lines = load_files(Lx, Ly, t, Re)
 
-    f = []
-    g = []
-    h = []
+    u_plot = u_plot[:-1, :-1]
+    v_plot = v_plot[:-1, :-1]
+    pressure = pressure[:-2, :-2]
+    stream_lines = stream_lines[:-1, :-1]
     
-    for (dirpath, dirnames, filenames) in walk(path):
-        f.extend(filenames)
-        g.extend(dirnames)
-        h = dirpath.split('/')[1:]
-        break
+    Nx, Ny = len(u_plot[0]), len(u_plot)
     
-    print(f"{f}\n{g}\n{h}\n")
     
+    velocity = np.zeros([Ny, Nx])
+    for i in range(Nx):
+        for j in range(Ny):
+            velocity[j,i] = np.sqrt(u_plot[j,i]**2 + v_plot[j,i]**2)
+            
+            
+            
+    
+    x = np.linspace(0, Lx, Nx)
+    y = np.linspace(0, Ly, Ny)
+    
+    Y, X = np.mgrid[0:1:complex(0,Ny), 0:1:complex(0, Nx)]
+
+    print('Plotting graphs ...')
+    
+    fig = plt.figure(1)
+    ax1 = fig.add_subplot(111)
+    title = str(f"Stream Function $\psi$ inside Lid-Driven Cavity with\nRe={Re}, Resolution {Nx}x{Ny} at t={t:.3f}")
+    plt.title(title)
+    vcmp = ax1.pcolormesh(stream_lines, cmap='jet', rasterized = True, 
+                          vmax = stream_lines.max(), vmin = stream_lines.min())
+    fig.colorbar(vcmp)
+    
+    fig2 = plt.figure(2)
+    ax2 = fig2.add_subplot(111)
+    plt.title(f"Pressure inside Lid-Driven Cavity with\nRe={Re}, Resolution {Nx}x{Ny} at t={t:.3f}")
+    pssp = ax2.pcolormesh(pressure, cmap='jet', rasterized = True, 
+                          vmax = pressure.max(), vmin = pressure.min())
+    fig2.colorbar(pssp)
+        
+    fig3 = plt.figure(3)
+    ax3 = fig3.add_subplot(111)
+    plt.title(f"Streamplot Lid-Driven Cavity with\nRe={Re}, Resolution {Nx}x{Ny} at t={t:.3f}")
+    strm = ax3.streamplot(X, Y, u_plot, v_plot, density= 2.5, color= 'k', cmap='jet',
+                          linewidth=0.5, arrowsize= 0.5)
+    
+    fig4 = plt.figure(4)
+    ax4 = fig4.add_subplot(111)
+    title = str(f"Velocities Modulus inside Lid-Driven Cavity with\nRe={Re}, Resolution {Nx}x{Ny} at t={t:.3f}")
+    plt.title(title)
+    vcmp = ax4.pcolormesh(velocity, cmap='jet', rasterized = True, 
+                          vmax = velocity.max(), vmin = velocity.min())
+    fig4.colorbar(vcmp)
+
+    print('Done plotting graphs!')
+    plt.show()
         

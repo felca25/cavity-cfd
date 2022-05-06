@@ -20,8 +20,8 @@ def create_paths(Lx, Ly, Re, t_arr, result_params):
     paths = []
     
     for j in range(len(t_arr)):
-        
-        path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t_arr[j]:.2f}'
+        t_arr[j] = round(t_arr[j], 3)
+        path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t_arr[j]:.3f}'
         
         try:
             os.makedirs(path)
