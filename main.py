@@ -12,7 +12,7 @@ TOL = 1e-8
 Nx, Ny = 100, 100
 Lx, Ly = 1., 1.
 
-reynolds = (100,)
+reynolds = (10,)
 
 dx, dy = Lx / Nx, Ly / Ny
 
