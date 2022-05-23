@@ -1,51 +1,49 @@
-import numpy as np
-
+import time
 import os
-from functions import *
+from functions import convergence_check
 import cavity
 os.system('cls' if os.name == 'nt' else 'clear')
 
-result_params = ('u_star', 'v_star', 'pressure', 'u', 'v', 'stream_function', 'uplot', 'vplot')
+RESULT_PARAMETERS = ('u_star', 'v_star', 'pressure', 'u', 'v')
 
 TOL = 1e-8
 
-Nx, Ny = 100, 100
-Lx, Ly = 1., 1.
+N_X, N_Y = 100, 100
+L_X, L_Y = 1., 1.
 
-reynolds = (10,)
+REYNOLDS = (1000,)
 
-dx, dy = Lx / Nx, Ly / Ny
+D_X, D_Y = L_X / N_X, L_Y / N_Y
 
-dt = 0.001
-
-# we need to first apply the stability and
-# convergence conditions so that the answers don't blow up
-# this should be at the main function because we ought to want
-# to have fine manual control over the process. But having this here
-# Ensures that the values won't blow up as those variables are Re dependent
-# What will be defined are the multipliers of the time steps to be saved
-
-if dx > 1 / np.sqrt(reynolds[0]):
-    dx = (1 / np.sqrt(reynolds[0])) - TOL
-    
-if dy > 1 / np.sqrt(reynolds[0]):
-    dy = (1 / np.sqrt(reynolds[0])) - TOL
-
-if dt > 0.25 * reynolds[0] * (dx**2) or dt > 0.25 * reynolds[0] * (dy**2):
-    dl = min([dx, dy])
-    dt = 0.25 * reynolds[0] * (dl**2)
-
-if dt > dx:
-    dt = dx - TOL
-
+D_T = (0.01,)
 
 t_mult = [1., 5., 10., 25., 50., 75., 100., 250., 500., 750., 1000.,
-          1250., 1500., 1750., 2000., 2500., 5000., 7500., 10000., 12500,
-          15000, 17500]
+        1250., 1500., 1750., 2000., 2500., 5000., 7500., 10000., 12500,
+        15000, 17500]
 
-t_arr = np.zeros(len(t_mult))
-for i in range(len(t_mult)):
-    t_arr[i] = t_mult[i] * dt
+INITIAL_PARAMETERS = (N_X, N_Y, L_X, L_Y, REYNOLDS, D_X, D_Y, D_T, t_mult, RESULT_PARAMETERS, TOL)
+
+ # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+
+if __name__ == "__main__":
     
-
-cavity.run(Nx, Ny, Lx, Ly, reynolds, dx, dy, dt, t_arr, result_params, TOL)
+    time_taken = []
+    
+    for i, Re in enumerate(REYNOLDS):
+        
+        start_time = time.time()
+        
+        
+        if len(REYNOLDS) > len(D_T):
+            raise IndexError('Time step array and Reynolds array must be the same size')
+        
+        
+        cavity.run(N_X, N_Y, L_X, L_Y, Re, D_X, D_Y, D_T[i], t_mult, RESULT_PARAMETERS, TOL)
+    
+    
+        end_time = time.time()
+        time_taken.append(end_time - start_time)
+        
+    print(time_taken)

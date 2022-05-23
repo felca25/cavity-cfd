@@ -1,7 +1,26 @@
 import numpy as np
 from numba import njit
+
 @njit
 def calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re):
+    """_summary_
+    
+    Calculates the intermediary velocity field u_star
+
+    Args:
+        u_star (class 'numpy.ndarray'): intermediary velocity field u* in the x axis
+        u (class 'numpy.ndarray'): velocity field u
+        v (class 'numpy.ndarray'): velocity field v
+        Nx (int): numbers of cells in the x axis
+        Ny (int): number of cells in the y axis
+        dx (float): step distance in the x axis
+        dy (float): step distance in the y axis
+        dt (float): step in time
+        Re (float): Reynold's number
+
+    Returns:
+        _type_: class 'numpy.ndarray'
+    """
     
     for i in range(1,Nx):
         for j in range(0,Ny):        
@@ -22,9 +41,10 @@ def calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re):
     for k in range(0, Nx+1):
         u_star[k,-1] = - u_star[k,0]
         u_star[k,Ny] = 2.0 - u_star[k, Ny-1]
-        
-            
+    
+             
     return u_star
+
 @njit
 def calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re):
     
@@ -50,13 +70,13 @@ def calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re):
         v_star[i,Ny] = 0.0
 
         
-    return v_star      
+    return v_star     
+ 
 @njit
 def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
-    error = 100;
+    error = 100
     iter = 0
     while error > TOL and iter < 1000:
-        # print(iter)
         R_max = 0
         for i in range(0,Nx):
             for j in range(0,Ny):
@@ -85,9 +105,6 @@ def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
                     
                         R2 = (((p[i+1,j] - 1.0*p[i,j]) / (dx*dx))
                                 +((p[i,j+1] - 2.0*p[i,j] + p[i,j-1]) / (dy*dy)))
-                        
-                    else:
-                        raise IndexError
                     
                 elif i == Nx-1:
                     if  j == 0:
@@ -110,9 +127,6 @@ def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
                     
                         R2 = (((-1.0*p[i,j] + p[i-1,j]) / (dx*dx))
                                 +((p[i,j+1] - 2.0*p[i,j] + p[i,j-1]) / (dy*dy)))
-                        
-                    else:
-                        raise IndexError
                     
                 elif i != 0 and i != Nx-1:
                     if  j == 0:
@@ -135,11 +149,8 @@ def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
                     
                         R2 = (((p[i+1,j] - 2.0*p[i,j] + p[i-1,j]) / (dx*dx))
                                 +((p[i,j+1] - 2.0*p[i,j] + p[i,j-1]) / (dy*dy)))
-                    else:
-                        raise IndexError
                 
-                else:
-                    raise IndexError
+                
                 R = R1 - R2
                 R = R/alpha
                 p[i,j] = p[i,j] + R
@@ -164,6 +175,7 @@ def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
         iter += 1
             
     return p
+
 @njit
 def calculate_new_u(u, u_star, p , Nx, Ny, dx, dt):
     
@@ -182,43 +194,34 @@ def calculate_new_v(v, v_star, p, Nx, Ny, dy, dt):
             v[i,j] = v_star[i,j] - dt * ((p[i,j] - p[i,j-1])/dy)
             
     return v
-@njit
-def calculate_stream_function(psi, u, v, Nx, Ny, dx, dy, dt, TOL):
-    
-    alpha = -((2.0/(dx*dx)) + (2.0/(dy*dy)))
-    
-    erro  = 100
-    iter = 0
-    while erro > TOL:
-        R_max = 0
-        
-        for i in range(1,Nx):
-            for j in range(1,Ny):
-                R1 = (((v[i,j] - v[i-1,j])/dx) + ((u[i,j] - u[i,j-1])/dy))
-                
-                R2 = (((psi[i+1,j] - 2.0*psi[i,j] + psi[i-1,j])/(dx*dx))\
-                        +((psi[i,j+1] - 2.0*psi[i,j] + psi[i,j-1])/(dy*dy)))
-                
-                R = - R1 - R2
-                R = R/alpha
-                
-                psi[i,j] = psi[i,j] + R
-                
-        if np.abs(R) > R_max:
-            R_max = np.abs(R)
-        
-        erro = R_max
-        iter += 1    
-    return psi
 
-def calculate_velocity_plot(u, v, Nx, Ny):
-    uplot = np.zeros([Nx+1,Ny+1],float) 
-    vplot = np.zeros([Nx+1,Ny+1],float) 
-    for i in range(0,Nx+1):
-        for j in range(0,Ny+1):
-            uplot[i,j] = 0.5*(u[i,j]+u[i,j-1]) 
-            vplot[i,j] = 0.5*(v[i,j]+v[i-1,j])
-            
-    return uplot, vplot
-
+def convergence_check(Re, dx, dy, dt, TOL):
     
+    reynolds_inv_sqrt =  1 / np.sqrt(Re)
+    dl = min([dx, dy])   
+
+    if dx > reynolds_inv_sqrt:
+        raise ValueError(f"For convergence the value of dx must be smaller than {reynolds_inv_sqrt}")
+        
+    if dy > reynolds_inv_sqrt:
+        raise ValueError(f"For convergence the value of dy must be smaller than {reynolds_inv_sqrt}")
+
+    if dt > 0.25 * Re * (dl**2):
+        dt = 0.25 * Re * (dl**2)
+        raise ValueError(f"For convergence the value of dt must be smaller than {dt}")
+
+    if dt > dx:
+        dt = dx - TOL
+        raise ValueError(f"For convergence the value of dt must be smaller than {dx}")
+    
+    return 1
+
+
+
+def create_t_arr(dt, t_mult):
+    t_arr = np.zeros(len(t_mult))
+    
+    for i, factor in enumerate(t_mult):
+        t_arr[i] = factor * dt
+
+    return t_arr

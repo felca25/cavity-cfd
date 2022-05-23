@@ -1,10 +1,10 @@
 import os
 import numpy as np
-import pandas as pd
+
 os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def create_paths(Lx, Ly, Re, t_arr, result_params):
+def create_paths(t_arr, Lx, Ly, Re, result_params):
     '''
     Creates directories to store cavity flow data
     
@@ -65,7 +65,6 @@ def save_data(matrix, params, rel_path):
     print(f"Done saving .txt on ... {rel_path}")
     
     return 1
-
 
 if __name__ == '__main__':
     Nx, Ny = 25, 25
