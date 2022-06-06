@@ -1,93 +1,114 @@
 import numpy as np
 import os
+import time as tm
 import save_data
 
 from functions import *
 os.system('cls' if os.name == 'nt' else 'clear')
 
-def run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params):
+def run(INITIAL_PARAMETERS, save_results=True):
+    """_summary_
+    Solves and saves the results for the lid-driven cavity problem for the initial arguments given.
 
+    Args:
+        INITIAL_PARAMETERS (array like): Here the parameters should be passed in the following order:
+        
+            N_X, N_Y, L_X, L_Y, REYNOLDS, D_X, D_Y, D_T, t_mult, RESULT_PARAMETERS, TOL
+        
+        for:
+            N_X (int): number of cells in the x axis
+            N_Y (int): number of cells in the y axis
+            L_X (float): characteristic length of the x axis
+            L_Y (float): characteristic length of the y axis
+            REYNOLDS (tuple): Reynold's numbers to solve the system for
+            D_X (float): spacial x step between discretized points
+            D_Y (float): spacial y step between discretized points
+            D_Y (float): time step for a given Reynold's number
+            t_mult (tuple): tuple of factors to multiply dt to save the results
+            RESULT_PARAMETERS (tuple): tuple of which parameters to save under the specified name
+            TOL (float): tolerance of the solver (should be a value smaller 1e-5 and larger than 1e-9)
+    
+    KArgs:
+        save_results (bool): saves results by default, set to False if saving is not desirable
 
-    for i in range(len(reynolds)):
+    Raises:
+        IndexError: when Reynold's numbers tuple and time steps tuples don't match in shape
+
+    Returns:
+        boolean : returns True whenever the functions has ran propperly
+    """
+    
+    N_X, N_Y, L_X, L_Y, REYNOLDS,\
+        D_X, D_Y, D_T, T_MULT, RESULT_PARAMETERS, TOL = INITIAL_PARAMETERS
         
-        Re = reynolds[i]
+    if len(REYNOLDS) > len(D_T):
+        raise IndexError('Time step array and Reynolds array must be the same size')
+    
+    save_data.save_initial_conditions(INITIAL_PARAMETERS)
+    
+    time_taken = []
+    for i, Re in enumerate(REYNOLDS):
+        dt = D_T[i]
+        start_time = tm.time()
         
-        if dx > 1 / np.sqrt(Re):
-            dx = (1 / np.sqrt(Re)) - TOL
+        # we need to first apply the stability and
+        # convergence conditions so that the answers don't blow up
+        # this should be at the main function because we ought to want
+        # to have fine manual control over the process. But having this here
+        # Ensures that the values won't blow up as those variables are Re dependent
+        # What will be defined are the multipliers of the time steps to be saved
             
-        dt = 0.25 * Re * (dx**2)
+        convergence_check(Re, D_X, D_Y, dt, TOL)
         
-        if dt > dx:
-            dt *= 0.01
-            
-        t_arr = np.zeros(len(t_arr_mult))
+        t_arr = create_t_arr(dt, T_MULT)
         
-        for i in range(len(t_arr)):
-            t_arr[i] = t_arr_mult[i] * dt
+        save_data.create_paths(t_arr, L_X, L_Y, Re, RESULT_PARAMETERS)
         
-        save_data.create_paths(Lx, Ly, Re, t_arr, result_params)
+        # Running the actual simulation from now on
         
-        u = np.zeros([Nx+1, Ny+2], float)
-        v = np.zeros([Nx+2, Ny+1], float)
-        p = np.zeros([Nx+2, Ny+2], float)
-        psi = np.zeros([Nx+1,Ny+1])
+        u = np.zeros([N_X+1, N_Y+2], float)
+        v = np.zeros([N_X+2, N_Y+1], float)
+        p = np.zeros([N_X+2, N_Y+2], float)
 
-        u[:,Ny] = 1.0
+        u[:,N_Y] = 1.0
 
         u_star = np.copy(u)
         v_star = np.copy(v)
 
         t = 0
         
-        while t < t_arr[-1]:
+        while t <= t_arr[-1]:
             t += dt
             print(t)
             
-            u_star = calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re)
+            u_star = calculate_u_star(u_star, u, v, N_X, N_Y, D_X, D_Y, dt, Re)
             
-            v_star = calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re)
+            v_star = calculate_v_star(v_star, v, u, N_X, N_Y, D_X, D_Y, dt, Re)
             
-            p = calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL)
+            p = calculate_pressure(p, u_star, v_star, N_X, N_Y, D_X, D_Y, dt, TOL)
             
-            u = calculate_new_u(u, u_star, p, Nx, Ny, dx, dt)
+            u = calculate_new_u(u, u_star, p, N_X, N_Y, D_X, dt)
             
-            v = calculate_new_v(v, v_star, p, Nx, Ny, dx, dt)
+            v = calculate_new_v(v, v_star, p, N_X, N_Y, D_X, dt)
             
-            psi = calculate_stream_function(psi, u, v, Nx, Ny, dx, dy, dt, TOL)
+            aux_arr = (u_star, v_star, p, u, v)
             
-            uplot, vplot = calculate_velocity_plot(u, v, Nx, Ny)
-            
-            aux_arr = (u_star, v_star, p, u, v, psi, uplot, vplot)
-            
-            
-            for time in t_arr:
-                if t >= time - 0.1*dt and t <= time + 0.1*dt:
-                    
-                    rel_path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re}/t_{t:.2f}'
-            
-                    save_data.save_data(aux_arr, result_params, rel_path)
-            
-        psi = calculate_stream_function(psi, u, v, Nx, Ny, dx, dy, dt, TOL)
-
-if __name__ == "__main__":
+            if save_results:
+                for time in t_arr:
+                    if t >= time - TOL and t <= time + TOL:
+                
+                        rel_path = f'cavity_results/{L_X:.2f}x{L_Y:.2f}/Re_{Re}/t_{t:.3f}'
+                
+                        save_data.save_data(aux_arr, RESULT_PARAMETERS, rel_path)
+        
+        end_time = tm.time()
+        time_taken.append(end_time - start_time)
+        
+        print(f'Done solving for Reynolds {Re}')
+        print(f'Took {time_taken[i]} s')
     
-    result_params = ('u_star', 'v_star', 'pressure', 'u', 'v', 'stream_function', 'uplot', 'vplot')
-
-    TOL = 1e-5
-
-    Nx, Ny = 25, 25
-    Lx, Ly = 1., 1.
-
-    reynolds = [1, 10, 100, 1000]
-
-    dx, dy = Lx / Nx, Ly / Ny
-
-    for Re in reynolds:
-        dt = 0.25 * Re * (dx**2)
-
-    if dt > dx:
-        dt *= 0.01
-
-    t_arr = (dt, 10*dt, 25*dt, 100*dt, 500*dt)
+    print(f'Done solving system')
     
-    run(Nx, Ny, Lx, Ly, reynolds, dx, dy, dt, t_arr, result_params)
+    return True
+        
+

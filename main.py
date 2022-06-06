@@ -1,20 +1,27 @@
-import numpy as np
 import os
-from functions import *
 import cavity
 os.system('cls' if os.name == 'nt' else 'clear')
 
-result_params = ('u_star', 'v_star', 'pressure', 'u', 'v', 'stream_function', 'uplot', 'vplot')
+RESULT_PARAMETERS = ('u_star', 'v_star', 'pressure', 'u', 'v')
 
-TOL = 1e-5
+TOL = 1e-8
 
-Nx, Ny = 25, 25
-Lx, Ly = 1., 1.
+N_X, N_Y = 100, 100
+L_X, L_Y = 1., 1.
 
-reynolds = [1, 10, 100, 1000]
+REYNOLDS = (1000,)
 
-dx, dy = Lx / Nx, Ly / Ny
+D_X, D_Y = L_X / N_X, L_Y / N_Y
 
-t_arr_mult = (1., 10., 25., 100., 500.)
+D_T = (0.01,)
 
-cavity.run(Nx, Ny, Lx, Ly, reynolds, dx, dy, t_arr_mult, result_params)
+t_mult = [1., 5., 10., 25., 50., 75., 100., 250., 500., 750., 1000.,
+        1250., 1500., 1750., 2000., 2500., 5000., 7500., 10000., 12500,
+        15000, 17500]
+
+INITIAL_PARAMETERS = (N_X, N_Y, L_X, L_Y, REYNOLDS, D_X, D_Y, D_T, t_mult, RESULT_PARAMETERS, TOL)
+
+ # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+if __name__ == "__main__":
+    cavity.run(INITIAL_PARAMETERS)

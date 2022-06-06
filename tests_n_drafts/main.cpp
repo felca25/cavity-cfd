@@ -27,10 +27,10 @@ float u_star[Nx+1][Ny+2] = {};
 float v_star[Nx+2][Ny+1] = {};
 
 int main(){
+    // Setting the initial conditions
     for(int i = 0; i < Nx; i++){
         u[i][Ny] = 2.0;
     }
-
 
     // Calculating u_star
     for(int i = 1; i < Nx; i++){
@@ -122,12 +122,14 @@ int main(){
         }
         cout << "\n";
     }
+
     for(int i = 0; i < Nx+2; i++){
         for(int j = 0; j < Ny+1; j++){
             cout << v_star[i][j] << ' ';
         }
         cout << "\n";
     }
+
     for(int i = 0; i < Nx+2; i++){
         for(int j = 0; j < Ny+2; j++){
             cout << v_star[i][j] << ' ';
