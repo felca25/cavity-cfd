@@ -1,10 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
-w = 1
-Nx = 10
-Ny = 10
-Y,X = np.mgrid[0:1:complex(0,Ny), 0:1:complex(0, Nx)]
-
-print(X)
+print(np.format_float_positional(np.linspace(0, 1.0, 20), precision=3))
+print(np.arange(0., 1., 0.05))

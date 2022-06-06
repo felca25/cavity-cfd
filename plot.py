@@ -133,9 +133,9 @@ if __name__ == "__main__":
     
     D_X, D_Y = L_X / N_X, L_Y / N_Y
 
-    REYNOLDS = (10, 100, 1000,)
+    REYNOLDS = (1000,)
 
-    times = [ 4.375, 43.75, 50.,]
+    times = [50.,]
     # 0.438,
     
     for j, Re in enumerate(REYNOLDS):

@@ -3,6 +3,6 @@
         "__bit_reference": "cpp",
         "iostream": "cpp"
     },
-    "python.linting.enabled": true,
+    "python.linting.enabled": false,
     "python.linting.pylintEnabled": true
 }

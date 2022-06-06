@@ -1,6 +1,4 @@
-import time
 import os
-from functions import convergence_check
 import cavity
 os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -25,25 +23,5 @@ INITIAL_PARAMETERS = (N_X, N_Y, L_X, L_Y, REYNOLDS, D_X, D_Y, D_T, t_mult, RESUL
 
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-
-
 if __name__ == "__main__":
-    
-    time_taken = []
-    
-    for i, Re in enumerate(REYNOLDS):
-        
-        start_time = time.time()
-        
-        
-        if len(REYNOLDS) > len(D_T):
-            raise IndexError('Time step array and Reynolds array must be the same size')
-        
-        
-        cavity.run(N_X, N_Y, L_X, L_Y, Re, D_X, D_Y, D_T[i], t_mult, RESULT_PARAMETERS, TOL)
-    
-    
-        end_time = time.time()
-        time_taken.append(end_time - start_time)
-        
-    print(time_taken)
+    cavity.run(INITIAL_PARAMETERS)

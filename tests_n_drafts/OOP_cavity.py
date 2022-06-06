@@ -29,33 +29,33 @@ class Cavity:
     
     def create_paths(Re, t_arr, result_params):
         '''
-    Creates directories to store cavity flow data
-    
-    returns:
-        all created txt paths
+        Creates directories to store cavity flow data
         
-    params:
-        Re: Reynold's numbers used
-        t_arr: time_steps_saved
-        result_params: params from the cavity problem 
-        to be save
-    '''
-    paths = []
-    
-    for i in range(len(Re)):
-        for j in range(len(t_arr)):
+        returns:
+            all created txt paths
             
-            path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re[i]}/t_{t_arr[j]:.2f}'
-            
-            try:
-                os.makedirs(path)
+        params:
+            Re: Reynold's numbers used
+            t_arr: time_steps_saved
+            result_params: params from the cavity problem 
+            to be save
+        '''
+        paths = []
+        
+        for i in range(len(Re)):
+            for j in range(len(t_arr)):
                 
-            except FileExistsError:
-                print(f'{path} Already Exists')
+                path = f'cavity_results/{Lx:.2f}x{Ly:.2f}/Re_{Re[i]}/t_{t_arr[j]:.2f}'
                 
-            for k in range(len(result_params)):
-                txt_path = f'{path}/{k}_{result_params[k]}.txt'
-                f =  open(txt_path, 'w').close()
-                paths.append(txt_path)
-                
-    return paths
+                try:
+                    os.makedirs(path)
+                    
+                except FileExistsError:
+                    print(f'{path} Already Exists')
+                    
+                for k in range(len(result_params)):
+                    txt_path = f'{path}/{k}_{result_params[k]}.txt'
+                    f =  open(txt_path, 'w').close()
+                    paths.append(txt_path)
+                    
+        return paths

@@ -201,18 +201,18 @@ def convergence_check(Re, dx, dy, dt, TOL):
     dl = min([dx, dy])   
 
     if dx > reynolds_inv_sqrt:
-        raise ValueError(f"For convergence the value of dx must be smaller than {reynolds_inv_sqrt}")
+        raise ValueError(f"For convergence the value of dx= {dx} must be smaller than {reynolds_inv_sqrt}")
         
     if dy > reynolds_inv_sqrt:
-        raise ValueError(f"For convergence the value of dy must be smaller than {reynolds_inv_sqrt}")
+        raise ValueError(f"For convergence the value of dy= {dy} must be smaller than {reynolds_inv_sqrt}")
 
     if dt > 0.25 * Re * (dl**2):
         dt = 0.25 * Re * (dl**2)
-        raise ValueError(f"For convergence the value of dt must be smaller than {dt}")
+        raise ValueError(f"For convergence the value of dt= {dt} must be smaller than {dt}")
 
     if dt > dx:
         dt = dx - TOL
-        raise ValueError(f"For convergence the value of dt must be smaller than {dx}")
+        raise ValueError(f"For convergence the value of dt= {dt} must be smaller than {dx}")
     
     return 1
 
