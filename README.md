@@ -1,8 +1,8 @@
 # cavity-cfd
 
 # This is a CFD solving for the classic lid-driven cavity problem
-# 
-=======
+---
+
 This code simulates the classic lid-driven cavity laminar flow problem from fluid dynamics.
 
 The main control file is the "main.py file"

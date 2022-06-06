@@ -3,7 +3,7 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import matplotlib.gridspec as gridspec
 import numpy as np
-from plotting_functions import *
+from functions.plotting_functions import *
 
 plt.rcParams["font.family"] = "Times New Roman"
 

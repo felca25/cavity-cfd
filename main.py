@@ -1,5 +1,5 @@
 import os
-import cavity
+import functions.cavity as cavity
 os.system('cls' if os.name == 'nt' else 'clear')
 
 RESULT_PARAMETERS = ('u_star', 'v_star', 'pressure', 'u', 'v')
