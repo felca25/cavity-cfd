@@ -2,7 +2,9 @@ import numpy as np
 from numba import njit
 
 @njit
-def calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re):
+def calculate_u_star(u_star:np.ndarray, u:np.ndarray, v:np.ndarray,
+                     Nx:int, Ny:int, dx:float, 
+                     dy:float, dt:float, Re:float):
     """_summary_
     
     Calculates the intermediary velocity field u_star
@@ -46,7 +48,27 @@ def calculate_u_star(u_star, u, v, Nx, Ny, dx, dy, dt, Re):
     return u_star
 
 @njit
-def calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re):
+def calculate_v_star(v_star:np.ndarray, v:np.ndarray, u:np.ndarray,
+                     Nx:int, Ny:int, dx:float, 
+                     dy:float, dt:float, Re:float):
+    """_summary_
+
+    Calculates the intermediary velocity field u_star
+
+    Args:
+        v_star (class 'numpy.ndarray'): intermediary velocity field v* in the y axis
+        v (class 'numpy.ndarray'): velocity field v
+        u (class 'numpy.ndarray'): velocity field u
+        Nx (int): numbers of cells in the x axis
+        Ny (int): number of cells in the y axis
+        dx (float): step distance in the x axis
+        dy (float): step distance in the y axis
+        dt (float): step in time
+        Re (float): Reynold's number
+
+    Returns:
+        _type_: class 'numpy.ndarray'
+    """
     
     for i in range(0,Nx):
         for j in range(1,Ny):     
@@ -73,7 +95,27 @@ def calculate_v_star(v_star, v, u, Nx, Ny, dx, dy, dt, Re):
     return v_star     
  
 @njit
-def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
+def calculate_pressure(p:np.ndarray, u_star:np.ndarray, v_star:np.ndarray,
+                       Nx:int, Ny:int, dx:float, dy:float, dt:float,/, 
+                       TOL=1e-8):
+    """_summary_
+
+        Calculates the pressure field for the current time-step t
+        
+    Args:
+        p (np.ndarray): pressure field p (scalar)
+        u_star (np.ndarray): intermediary velocity field u* in the x axis
+        v_star (np.ndarray): intermediary velocity field v* in the y axis
+        Nx (int): numbers of cells in the x axis
+        Ny (int): number of cells in the y axis
+        dx (float): step distance in the x axis
+        dy (float): step distance in the y axis
+        dt (float): step in time
+        TOL (float): tolerance desired, defaults to 1e-8
+
+    Returns:
+        _type_: np.ndarray
+    """
     error = 100
     iter = 0
     while error > TOL and iter < 1000:
@@ -177,7 +219,8 @@ def calculate_pressure(p, u_star, v_star, Nx, Ny, dx, dy, dt, TOL):
     return p
 
 @njit
-def calculate_new_u(u, u_star, p , Nx, Ny, dx, dt):
+def calculate_new_u(u:np.ndarray, u_star:np.ndarray, p:np.ndarray, 
+                    Nx:int, Ny:int, dx:float, dt:float):
     
     for i in range(1,Nx):
         for j in range(-1,Ny+1):
@@ -186,7 +229,8 @@ def calculate_new_u(u, u_star, p , Nx, Ny, dx, dt):
 
     return u
 @njit
-def calculate_new_v(v, v_star, p, Nx, Ny, dy, dt):
+def calculate_new_v(v:np.ndarray, v_star:np.ndarray, p:np.ndarray, 
+                    Nx:int, Ny:int, dy:float, dt:float):
     
     for i in range(-1,Nx+1):
         for j in range(1, Ny):
@@ -195,14 +239,37 @@ def calculate_new_v(v, v_star, p, Nx, Ny, dy, dt):
             
     return v
 
-def convergence_check(Re, dx, dy, dt, TOL):
+def convergence_check(Re:float, dx:float, dy:float, dt:float, TOL:float):
+    
+    """_summary_
+    
+        Check parameters inputed on the main.py file for convergence of the numerical
+        method employed
+        
+    Args:
+        Re (float): Reynolds number
+        dx (float): step distance in the x axis
+        dy (float): step distance in the y axis
+        dt (float): step in time
+        TOL (float): tolerance set for the pressure field calculations which will be also
+                     used in other parts of the module 
+
+    Raises:
+        ValueError: check for dx < inverse square root of the reynolds number
+        ValueError: check for dy < inverse square root of the reynolds number
+        ValueError: check for dy < dt
+        ValueError: check for dy < dx
+
+    Returns:
+        _type_: (bool) True
+    """
     
     reynolds_inv_sqrt =  1 / np.sqrt(Re)
     dl = min([dx, dy])   
 
     if dx > reynolds_inv_sqrt:
         raise ValueError(f"For convergence the value of dx= {dx} must be smaller than {reynolds_inv_sqrt}")
-        
+    
     if dy > reynolds_inv_sqrt:
         raise ValueError(f"For convergence the value of dy= {dy} must be smaller than {reynolds_inv_sqrt}")
 
@@ -210,15 +277,16 @@ def convergence_check(Re, dx, dy, dt, TOL):
         dt = 0.25 * Re * (dl**2)
         raise ValueError(f"For convergence the value of dt= {dt} must be smaller than {dt}")
 
-    if dt > dx:
-        dt = dx - TOL
+    if dt > dl:
+        dt = dl - TOL
         raise ValueError(f"For convergence the value of dt= {dt} must be smaller than {dx}")
     
-    return 1
+    return True
 
 
 
 def create_t_arr(dt, t_mult):
+    
     t_arr = np.zeros(len(t_mult))
     
     for i, factor in enumerate(t_mult):
